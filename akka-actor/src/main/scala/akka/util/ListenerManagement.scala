@@ -4,7 +4,7 @@
 
 package akka.util
 
-import java.util.concurrent.ConcurrentSkipListSet
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet
 import akka.actor.{ ActorInitializationException, ActorRef }
 
 /**
@@ -14,7 +14,7 @@ import akka.actor.{ ActorInitializationException, ActorRef }
  */
 trait ListenerManagement {
 
-  private val listeners = new ConcurrentSkipListSet[ActorRef]
+  private val listeners = (new ConcurrentSkipListSet).asInstanceOf[java.util.Set[ActorRef]]
 
   /**
    * Specifies whether listeners should be started when added and stopped when removed or not

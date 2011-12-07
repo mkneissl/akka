@@ -56,7 +56,7 @@ class RoutingSpec extends WordSpec with MustMatchers {
     }
 
     "have messages logged" in {
-      val msgs = new java.util.concurrent.ConcurrentSkipListSet[Any]
+      val msgs = (new edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet).asInstanceOf[java.util.Set[Any]]
       val latch = TestLatch(2)
 
       val actor = actorOf(new Actor {

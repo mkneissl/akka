@@ -6,7 +6,9 @@ package akka.actor.remote
 
 import akka.actor._
 import akka.actor.Actor._
-import java.util.concurrent.{ ConcurrentSkipListSet, TimeUnit }
+import java.util.concurrent.TimeUnit
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet
+
 import akka.remote.netty.NettyRemoteSupport
 
 object ServerInitiatedRemoteSessionActorSpec {
@@ -15,7 +17,7 @@ object ServerInitiatedRemoteSessionActorSpec {
   case class GetUser()
   case class DoSomethingFunny()
 
-  val instantiatedSessionActors = new ConcurrentSkipListSet[ActorRef]()
+  val instantiatedSessionActors = (new ConcurrentSkipListSet).asInstanceOf[java.util.Set[ActorRef]]
 
   class RemoteStatefullSessionActorSpec extends Actor {
 

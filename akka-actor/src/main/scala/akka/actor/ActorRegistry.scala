@@ -7,7 +7,8 @@ package akka.actor
 import scala.collection.mutable.{ ListBuffer, Map }
 import scala.reflect.Manifest
 
-import java.util.concurrent.{ ConcurrentSkipListSet, ConcurrentHashMap }
+import java.util.concurrent.ConcurrentHashMap
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet
 import java.util.{ Set ⇒ JSet }
 
 import annotation.tailrec
@@ -281,7 +282,7 @@ final class ActorRegistry private[actor] () extends ListenerManagement {
 class Index[K <: AnyRef, V <: AnyRef: Manifest] {
   private val Naught = Array[V]() //Nil for Arrays
   private val container = new ConcurrentHashMap[K, JSet[V]]
-  private val emptySet = new ConcurrentSkipListSet[V]
+  private val emptySet = (new ConcurrentSkipListSet).asInstanceOf[java.util.Set[V]]
 
   /**
    * Associates the value of type V with the key of type K
@@ -304,7 +305,7 @@ class Index[K <: AnyRef, V <: AnyRef: Manifest] {
           }
         }
       } else {
-        val newSet = new ConcurrentSkipListSet[V]
+        val newSet = (new ConcurrentSkipListSet).asInstanceOf[java.util.Set[V]]
         newSet add v
 
         // Parry for two simultaneous putIfAbsent(id,newSet)

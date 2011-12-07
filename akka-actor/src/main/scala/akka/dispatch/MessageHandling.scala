@@ -4,6 +4,7 @@
 
 package akka.dispatch
 
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 import akka.event.EventHandler
@@ -56,7 +57,7 @@ object MessageDispatcher {
 trait MessageDispatcher {
   import MessageDispatcher._
 
-  protected val uuids = new ConcurrentSkipListSet[Uuid]
+  protected val uuids = (new ConcurrentSkipListSet).asInstanceOf[java.util.Set[Uuid]]
   protected val _tasks = new AtomicLong(0L)
   protected val guard = new ReentrantGuard
   protected val active = new Switch(false)

@@ -78,7 +78,7 @@ class ActorRestartSpec extends WordSpec with MustMatchers with TestKit with Befo
     }
   }
 
-  private var toStop = new java.util.concurrent.ConcurrentSkipListSet[ActorRef]
+  private var toStop = (new edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet).asInstanceOf[java.util.Set[ActorRef]]
   private def newActor(f: ⇒ Actor): ActorRef = {
     val ref = actorOf(f)
     toStop add ref

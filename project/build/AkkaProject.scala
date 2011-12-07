@@ -105,6 +105,10 @@ class AkkaParentProject(info: ProjectInfo) extends ParentProject(info) with Exec
 
     lazy val commons_io = "commons-io" % "commons-io" % "2.0.1" % "compile" //ApacheV2
 
+    // See http://backport-jsr166.sourceforge.net/index.php
+    lazy val backportUtilConcurrent = "backport-util-concurrent" % "backport-util-concurrent" % "3.1" % "compile" //Public Domain
+             
+
     lazy val javax_servlet_30 = "org.apache.geronimo.specs" % "geronimo-servlet_3.0_spec" % "1.0" % "provided" //CDDL v1
 
     lazy val jetty         = "org.eclipse.jetty" % "jetty-server"  % JETTY_VERSION % "provided" //Eclipse license
@@ -288,6 +292,7 @@ class AkkaParentProject(info: ProjectInfo) extends ParentProject(info) with Exec
     override def bndImportPackage = "*" :: Nil
     val cont = compilerPlugin("org.scala-lang.plugins" % "continuations" % buildScalaVersion)
     override def compileOptions = super.compileOptions ++ compileOptions("-P:continuations:enable")
+    val backportUtilConcurrent = Dependencies.backportUtilConcurrent
   }
 
   // -------------------------------------------------------------------------------------------------------------------

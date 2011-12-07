@@ -88,8 +88,6 @@ public final class UUIDGen {
 
         try {
             Class.forName("java.net.InterfaceAddress");
-            macAddress = Class.forName(
-                    "com.eaio.uuid.UUIDGen$HardwareAddressLookup").newInstance().toString();
         }
         catch (ExceptionInInitializerError err) {
             // Ignored.
@@ -98,12 +96,6 @@ public final class UUIDGen {
             // Ignored.
         }
         catch (LinkageError err) {
-            // Ignored.
-        }
-        catch (IllegalAccessException ex) {
-            // Ignored.
-        }
-        catch (InstantiationException ex) {
             // Ignored.
         }
         catch (SecurityException ex) {
@@ -324,39 +316,6 @@ public final class UUIDGen {
                 }
                 p.destroy();
             }
-        }
-
-    }
-
-    /**
-     * Scans MAC addresses for good ones.
-     */
-    static class HardwareAddressLookup {
-
-        /**
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            String out = null;
-            try {
-                Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
-                if (ifs != null) {
-                    while (ifs.hasMoreElements()) {
-                        NetworkInterface iface = ifs.nextElement();
-                        byte[] hardware = iface.getHardwareAddress();
-                        if (hardware != null && hardware.length == 6
-                                && hardware[1] != (byte) 0xff) {
-                            out = Hex.append(new StringBuilder(36), hardware).toString();
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (SocketException ex) {
-                // Ignore it.
-            }
-            return out;
         }
 
     }

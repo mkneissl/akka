@@ -64,11 +64,23 @@ case class ThreadPoolConfig(allowCorePoolTimeout: Boolean = ThreadPoolConfig.def
     flowHandler match {
       case Left(rejectHandler) ⇒
         val service = new ThreadPoolExecutor(corePoolSize, maxPoolSize, threadTimeout.length, threadTimeout.unit, queueFactory(), threadFactory, rejectHandler)
-        service.allowCoreThreadTimeOut(allowCorePoolTimeout)
+        try {
+          service.allowCoreThreadTimeOut(allowCorePoolTimeout)
+	} catch {
+          case nsme: NoSuchMethodError => 
+            // missing in Android 2.2
+            () 
+	}
         service
       case Right(bounds) ⇒
         val service = new ThreadPoolExecutor(corePoolSize, maxPoolSize, threadTimeout.length, threadTimeout.unit, queueFactory(), threadFactory)
-        service.allowCoreThreadTimeOut(allowCorePoolTimeout)
+        try {
+          service.allowCoreThreadTimeOut(allowCorePoolTimeout)
+	} catch {
+          case nsme: NoSuchMethodError => 
+            // missing in Android 2.2
+            () 
+	}
         new BoundedExecutorDecorator(service, bounds)
     }
   }

@@ -5,7 +5,7 @@
 package akka.routing
 
 import akka.actor.{ Actor, ActorRef }
-import java.util.concurrent.ConcurrentSkipListSet
+import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentSkipListSet
 import scala.collection.JavaConversions._
 
 sealed trait ListenerMessage
@@ -25,7 +25,7 @@ case class WithListeners(f: (ActorRef) ⇒ Unit) extends ListenerMessage
  * Send <code>WithListeners(fun)</code> to traverse the current listeners.
  */
 trait Listeners { self: Actor ⇒
-  private val listeners = new ConcurrentSkipListSet[ActorRef]
+  private val listeners = (new ConcurrentSkipListSet).asInstanceOf[java.util.Set[ActorRef]]
 
   protected def listenerManagement: Receive = {
     case Listen(l)        ⇒ listeners add l
