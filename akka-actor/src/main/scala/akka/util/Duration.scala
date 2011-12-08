@@ -5,7 +5,9 @@
 package akka.util
 
 import java.util.concurrent.TimeUnit
-import TimeUnit._
+import edu.emory.mathcs.backport.java.util.concurrent.{TimeUnit ⇒ BpTimeUnit}
+
+import TimeUnit.{ DAYS ⇒ _, HOURS ⇒ _, MINUTES ⇒ _, _}
 import java.lang.{ Long ⇒ JLong, Double ⇒ JDouble }
 
 object Duration {
@@ -13,21 +15,45 @@ object Duration {
   def apply(length: Double, unit: TimeUnit): Duration = fromNanos(unit.toNanos(1) * length)
   def apply(length: Long, unit: String): Duration = new FiniteDuration(length, timeUnit(unit))
 
+  private def apply(length: Long, unit: BpTimeUnit): Duration = {
+    import BpTimeUnit._
+    unit match {
+      case BpTimeUnit.DAYS | BpTimeUnit.HOURS | BpTimeUnit.MINUTES ⇒
+        Duration(unit.toSeconds(length), TimeUnit.SECONDS)
+      case BpTimeUnit.SECONDS ⇒
+        Duration(length, TimeUnit.SECONDS)
+      case BpTimeUnit.MILLISECONDS ⇒
+        Duration(length, TimeUnit.MILLISECONDS)
+      case BpTimeUnit.MICROSECONDS ⇒
+        Duration(length, TimeUnit.MICROSECONDS)
+      case _ ⇒
+        Duration(unit.toNanos(length), TimeUnit.NANOSECONDS)
+    }
+  }
+  private def apply(length: Double, unit: BpTimeUnit): Duration = fromNanos(unit.toNanos(1) * length)
+
+  private[util] def unitToBackportUnit(timeUnit: TimeUnit): BpTimeUnit = timeUnit match {
+    case SECONDS ⇒ BpTimeUnit.SECONDS
+    case MILLISECONDS ⇒ BpTimeUnit.MILLISECONDS
+    case MICROSECONDS ⇒ BpTimeUnit.MICROSECONDS
+    case NANOSECONDS ⇒ BpTimeUnit.NANOSECONDS
+  }
+
   def fromNanos(nanos: Long): Duration = {
     if (nanos % 86400000000000L == 0) {
-      Duration(nanos / 86400000000000L, DAYS)
+      Duration(nanos / 86400000000000L, BpTimeUnit.DAYS)
     } else if (nanos % 3600000000000L == 0) {
-      Duration(nanos / 3600000000000L, HOURS)
+      Duration(nanos / 3600000000000L, BpTimeUnit.HOURS)
     } else if (nanos % 60000000000L == 0) {
-      Duration(nanos / 60000000000L, MINUTES)
+      Duration(nanos / 60000000000L, BpTimeUnit.MINUTES)
     } else if (nanos % 1000000000L == 0) {
-      Duration(nanos / 1000000000L, SECONDS)
+      Duration(nanos / 1000000000L, BpTimeUnit.SECONDS)
     } else if (nanos % 1000000L == 0) {
-      Duration(nanos / 1000000L, MILLISECONDS)
+      Duration(nanos / 1000000L, BpTimeUnit.MILLISECONDS)
     } else if (nanos % 1000L == 0) {
-      Duration(nanos / 1000L, MICROSECONDS)
+      Duration(nanos / 1000L, BpTimeUnit.MICROSECONDS)
     } else {
-      Duration(nanos, NANOSECONDS)
+      Duration(nanos, BpTimeUnit.NANOSECONDS)
     }
   }
 
@@ -70,7 +96,7 @@ object Duration {
    */
   def unapply(s: String): Option[Duration] = s match {
     case RE(length, d, h, m, s, ms, mus, ns) ⇒
-      if (d ne null) Some(Duration(JDouble.parseDouble(length), DAYS)) else if (h ne null) Some(Duration(JDouble.parseDouble(length), HOURS)) else if (m ne null) Some(Duration(JDouble.parseDouble(length), MINUTES)) else if (s ne null) Some(Duration(JDouble.parseDouble(length), SECONDS)) else if (ms ne null) Some(Duration(JDouble.parseDouble(length), MILLISECONDS)) else if (mus ne null) Some(Duration(JDouble.parseDouble(length), MICROSECONDS)) else if (ns ne null) Some(Duration(JDouble.parseDouble(length), NANOSECONDS)) else
+      if (d ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.DAYS)) else if (h ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.HOURS)) else if (m ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.MINUTES)) else if (s ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.SECONDS)) else if (ms ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.MILLISECONDS)) else if (mus ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.MICROSECONDS)) else if (ns ne null) Some(Duration(JDouble.parseDouble(length), BpTimeUnit.NANOSECONDS)) else
         sys.error("made some error in regex (should not be possible)")
     case REinf()  ⇒ Some(Inf)
     case REminf() ⇒ Some(MinusInf)
@@ -81,9 +107,6 @@ object Duration {
    * Parse TimeUnit from string representation.
    */
   def timeUnit(unit: String) = unit.toLowerCase match {
-    case "d" | "day" | "days"                                       ⇒ DAYS
-    case "h" | "hour" | "hours"                                     ⇒ HOURS
-    case "min" | "minute" | "minutes"                               ⇒ MINUTES
     case "s" | "sec" | "second" | "seconds"                         ⇒ SECONDS
     case "ms" | "milli" | "millis" | "millisecond" | "milliseconds" ⇒ MILLISECONDS
     case "µs" | "micro" | "micros" | "microsecond" | "microseconds" ⇒ MICROSECONDS
@@ -270,18 +293,12 @@ class FiniteDuration(val length: Long, val unit: TimeUnit) extends Duration {
   def toMicros = unit.toMicros(length)
   def toMillis = unit.toMillis(length)
   def toSeconds = unit.toSeconds(length)
-  def toMinutes = unit.toMinutes(length)
-  def toHours = unit.toHours(length)
-  def toDays = unit.toDays(length)
+  def toMinutes = unitToBackportUnit(unit).toMinutes(length)
+  def toHours = unitToBackportUnit(unit).toHours(length)
+  def toDays = unitToBackportUnit(unit).toDays(length)
   def toUnit(u: TimeUnit) = long2double(toNanos) / NANOSECONDS.convert(1, u)
 
   override def toString = this match {
-    case Duration(1, DAYS)         ⇒ "1 day"
-    case Duration(x, DAYS)         ⇒ x + " days"
-    case Duration(1, HOURS)        ⇒ "1 hour"
-    case Duration(x, HOURS)        ⇒ x + " hours"
-    case Duration(1, MINUTES)      ⇒ "1 minute"
-    case Duration(x, MINUTES)      ⇒ x + " minutes"
     case Duration(1, SECONDS)      ⇒ "1 second"
     case Duration(x, SECONDS)      ⇒ x + " seconds"
     case Duration(1, MILLISECONDS) ⇒ "1 millisecond"
@@ -379,15 +396,6 @@ class DurationInt(n: Int) {
 
   def seconds = Duration(n, SECONDS)
   def second = Duration(n, SECONDS)
-
-  def minutes = Duration(n, MINUTES)
-  def minute = Duration(n, MINUTES)
-
-  def hours = Duration(n, HOURS)
-  def hour = Duration(n, HOURS)
-
-  def days = Duration(n, DAYS)
-  def day = Duration(n, DAYS)
 }
 
 class DurationLong(n: Long) {
@@ -408,15 +416,6 @@ class DurationLong(n: Long) {
 
   def seconds = Duration(n, SECONDS)
   def second = Duration(n, SECONDS)
-
-  def minutes = Duration(n, MINUTES)
-  def minute = Duration(n, MINUTES)
-
-  def hours = Duration(n, HOURS)
-  def hour = Duration(n, HOURS)
-
-  def days = Duration(n, DAYS)
-  def day = Duration(n, DAYS)
 }
 
 class DurationDouble(d: Double) {
@@ -437,13 +436,4 @@ class DurationDouble(d: Double) {
 
   def seconds = Duration(d, SECONDS)
   def second = Duration(d, SECONDS)
-
-  def minutes = Duration(d, MINUTES)
-  def minute = Duration(d, MINUTES)
-
-  def hours = Duration(d, HOURS)
-  def hour = Duration(d, HOURS)
-
-  def days = Duration(d, DAYS)
-  def day = Duration(d, DAYS)
 }
