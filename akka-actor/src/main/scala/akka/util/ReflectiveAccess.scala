@@ -46,12 +46,16 @@ object ReflectiveAccess {
       EventHandler.debug(this, e.toString)
       throw e
     }
-    val remoteSupportClass = getClassFor[RemoteSupport](TRANSPORT) match {
+    // FIXME: Somehow this results in Right(null) on Android. Disabling remoting for the moment.
+    val remoteSupportClass: Option[Class[RemoteSupport]] =  None
+/*
+getClassFor[RemoteSupport](TRANSPORT) match {
       case Right(value) ⇒ Some(value)
       case Left(exception) ⇒
         EventHandler.debug(this, exception.toString)
         None
     }
+*/
 
     protected[akka] val defaultRemoteSupport: Option[() ⇒ RemoteSupport] =
       remoteSupportClass map { remoteClass ⇒
