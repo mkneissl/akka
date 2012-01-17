@@ -865,7 +865,7 @@ class LocalActorRef private[akka] (
         case _                         ⇒ None
       }
       Actor.remote.send[Any](
-        message, sender, chFuture, homeAddress.get, timeout, true, this, None, ActorType.ScalaActor, None)
+        message, sender, chFuture, homeAddress.get, timeout, chFuture.isEmpty, this, None, ActorType.ScalaActor, None)
     } else {
       dispatcher dispatchMessage new MessageInvocation(this, message, channel)
     }
@@ -1252,7 +1252,7 @@ private[akka] case class RemoteActorRef private[akka] (
       case f: ActorCompletableFuture ⇒ Some(f)
       case _                         ⇒ None
     }
-    Actor.remote.send[Any](message, chSender, chFuture, homeAddress.get, timeout, true, this, None, actorType, loader)
+    Actor.remote.send[Any](message, chSender, chFuture, homeAddress.get, timeout, chFuture.isEmpty, this, None, actorType, loader)
   }
 
   def postMessageToMailboxAndCreateFutureResultWithTimeout(

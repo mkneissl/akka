@@ -107,7 +107,7 @@ class AkkaParentProject(info: ProjectInfo) extends ParentProject(info) with Exec
 
     // See http://backport-jsr166.sourceforge.net/index.php
     lazy val backportUtilConcurrent = "backport-util-concurrent" % "backport-util-concurrent" % "3.1" % "compile" //Public Domain
-             
+
 
     lazy val javax_servlet_30 = "org.apache.geronimo.specs" % "geronimo-servlet_3.0_spec" % "1.0" % "provided" //CDDL v1
 
@@ -240,7 +240,7 @@ class AkkaParentProject(info: ProjectInfo) extends ParentProject(info) with Exec
   // -------------------------------------------------------------------------------------------------------------------
 
   val localReleasePath = outputPath / "release" / version.toString
-  val localReleaseRepository = Resolver.file("Local Release", localReleasePath / "repository" asFile)
+  val localReleaseRepository = Resolver.file("Local Release", localReleasePath / "releases" asFile)
 
   override def otherRepositories = super.otherRepositories ++ Seq(localReleaseRepository)
 
@@ -377,6 +377,7 @@ class AkkaParentProject(info: ProjectInfo) extends ParentProject(info) with Exec
     val protobuf   = Dependencies.protobuf
     val zeromq     = Dependencies.zeromq
     val scalatest  = Dependencies.scalatest
+
   }
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -600,7 +601,7 @@ class AkkaParentProject(info: ProjectInfo) extends ParentProject(info) with Exec
     lazy val akkaActorsDist = project("actors", "akka-dist-actors", new AkkaActorsDistProject(_), akka_actor)
 
     lazy val akkaCoreDist = project("core", "akka-dist-core", new AkkaCoreDistProject(_),
-                                    akkaActorsDist, akka_remote, akka_http, akka_slf4j, akka_testkit, akka_actor_tests, akka_durable_mailboxes)
+                                    akkaActorsDist, akka_remote, akka_http, akka_slf4j, akka_testkit, akka_actor_tests, akka_durable_mailboxes, akka_zeromq)
 
     def doNothing = task { None }
     override def publishLocalAction = doNothing
